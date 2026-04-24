@@ -1,0 +1,38 @@
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import List, Optional
+from app.services.chat_service import generate_response
+from app.models.database import save_message, get_history
+
+router = APIRouter()
+
+class ChatRequest(BaseModel):
+    message: str
+    history: Optional[List[dict]] = []
+
+class ChatResponse(BaseModel):
+    answer: str
+    citations: List[str] = []
+
+@router.post("/", response_model=ChatResponse)
+async def chat(request: ChatRequest):
+    try:
+        # Save user message
+        save_message("user", request.message)
+        
+        response_text, citations = generate_response(request.message, request.history)
+        
+        # Save AI response
+        save_message("assistant", response_text)
+        
+        return ChatResponse(answer=response_text, citations=citations)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/history")
+async def fetch_history():
+    try:
+        history = get_history()
+        return {"history": history}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
