@@ -1,6 +1,6 @@
 import os
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from app.rag.vector_store import add_documents
 
 def process_and_store_document(file_path: str):

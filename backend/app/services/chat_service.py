@@ -1,6 +1,6 @@
 from app.rag.vector_store import search_documents
 from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from app.config import settings
 
 # In a real app, you might want to use a local LLM or configure this properly
