@@ -301,7 +301,6 @@ export default function Home() {
                   </div>
                   <div className="text-left flex-1 overflow-hidden">
                     <p className="text-sm font-medium text-white truncate">{currentUser}</p>
-                    <p className="text-xs text-zinc-400">Pro Plan</p>
                   </div>
                 </div>
                 <button 
