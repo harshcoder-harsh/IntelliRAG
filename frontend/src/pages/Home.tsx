@@ -63,6 +63,7 @@ export default function Home() {
   const handleSignOut = () => {
     localStorage.removeItem('user');
     setCurrentUser(null);
+    window.location.href = '/signin';
   };
 
   useEffect(() => {
