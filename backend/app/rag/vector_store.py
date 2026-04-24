@@ -22,10 +22,11 @@ def add_documents(documents):
     store.save_local(vector_store_path)
     return True
 
-def search_documents(query, k=4):
+def search_documents(query, k=4, filter=None):
     store = get_vector_store()
     if store is None:
         return []
     
-    docs = store.similarity_search(query, k=k)
+    # FAISS similarity_search accepts a filter dict
+    docs = store.similarity_search(query, k=k, filter=filter)
     return docs

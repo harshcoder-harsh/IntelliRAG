@@ -17,8 +17,10 @@ def get_llm():
         # Fallback or mock if no key
         return None
 
-def generate_response(query: str, history: list):
-    docs = search_documents(query)
+def generate_response(query: str, history: list, selected_file: str = None):
+    # Pass filter to vector store if a specific file is selected
+    filter_dict = {"source": selected_file} if selected_file else None
+    docs = search_documents(query, filter=filter_dict)
     
     if not docs:
         context = "No relevant context found in documents."

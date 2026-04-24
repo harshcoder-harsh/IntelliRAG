@@ -19,6 +19,7 @@ export default function Home() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<string[]>([]);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -71,7 +72,8 @@ export default function Home() {
       
       const response = await axios.post(`${API_URL}/chat/`, {
         message: userMessage,
-        history: history
+        history: history,
+        selected_file: selectedFile
       });
 
       setMessages(prev => [
@@ -116,9 +118,11 @@ export default function Home() {
     }
   };
 
-  const handleDeleteFile = async (filename: string) => {
+  const handleDeleteFile = async (filename: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     try {
       await axios.delete(`${API_URL}/upload/files/${filename}`);
+      if (selectedFile === filename) setSelectedFile(null);
       await fetchFiles();
     } catch (error) {
       console.error('Error deleting file:', error);
@@ -170,8 +174,16 @@ export default function Home() {
           </div>
 
           <div>
-            <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">
-              Uploaded Files ({files.length})
+            <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4 flex items-center justify-between">
+              <span>Uploaded Files ({files.length})</span>
+              {selectedFile && (
+                <button 
+                  onClick={() => setSelectedFile(null)}
+                  className="text-xs text-indigo-400 hover:text-indigo-300 normal-case"
+                >
+                  Clear Selection
+                </button>
+              )}
             </h2>
             <div className="space-y-2">
               <AnimatePresence>
@@ -182,14 +194,21 @@ export default function Home() {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ delay: idx * 0.05 }}
                     key={file}
-                    className="flex items-center justify-between p-3 rounded-xl bg-zinc-800/30 border border-zinc-800 hover:border-zinc-700 transition-colors group"
+                    onClick={() => setSelectedFile(file === selectedFile ? null : file)}
+                    className={`flex items-center justify-between p-3 rounded-xl border transition-all group cursor-pointer ${
+                      file === selectedFile 
+                        ? 'bg-indigo-500/20 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.1)]' 
+                        : 'bg-zinc-800/30 border-zinc-800 hover:border-zinc-700'
+                    }`}
                   >
                     <div className="flex items-center gap-3 overflow-hidden">
-                      <File className="w-4 h-4 text-zinc-400 shrink-0" />
-                      <span className="text-sm text-zinc-300 truncate font-medium">{file}</span>
+                      <File className={`w-4 h-4 shrink-0 transition-colors ${file === selectedFile ? 'text-indigo-400' : 'text-zinc-400'}`} />
+                      <span className={`text-sm truncate font-medium transition-colors ${file === selectedFile ? 'text-indigo-200' : 'text-zinc-300'}`}>
+                        {file}
+                      </span>
                     </div>
                     <button
-                      onClick={() => handleDeleteFile(file)}
+                      onClick={(e) => handleDeleteFile(file, e)}
                       className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -284,7 +303,7 @@ export default function Home() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask anything about your documents..."
+                  placeholder={selectedFile ? `Ask about ${selectedFile}...` : "Ask anything about your documents..."}
                   className="flex-1 bg-transparent border-none outline-none py-5 pl-6 pr-4 text-[15px] text-zinc-100 placeholder-zinc-500"
                   disabled={isLoading}
                 />
