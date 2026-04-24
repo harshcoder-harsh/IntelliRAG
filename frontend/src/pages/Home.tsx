@@ -70,11 +70,13 @@ export default function Home() {
       // Here we just pass the current query to keep it simple.
       const history = messages.slice(-4).map(m => ({ role: m.role, content: m.content }));
       
-      const response = await axios.post(`${API_URL}/chat/`, {
+      const payload = {
         message: userMessage,
         history: history,
         selected_file: selectedFile
-      });
+      };
+      
+      const response = await axios.post(`${API_URL}/chat/`, payload);
 
       setMessages(prev => [
         ...prev,
