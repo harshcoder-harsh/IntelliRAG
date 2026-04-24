@@ -350,13 +350,13 @@ export default function Home() {
               <div className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    OpenAI API Key
+                    OpenAI / Groq API Key
                   </label>
                   <input
                     type="password"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="sk-..."
+                    placeholder="sk-... or gsk_..."
                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
                   />
                   <p className="mt-2 text-xs text-zinc-500">

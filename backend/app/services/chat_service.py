@@ -1,5 +1,6 @@
 from app.rag.vector_store import search_documents
 from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from app.config import settings
 
@@ -7,7 +8,11 @@ from app.config import settings
 def get_llm(api_key: str = None):
     key = api_key or settings.OPENAI_API_KEY
     if key:
-        return ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, openai_api_key=key)
+        # Check if it's a groq key (usually starts with gsk_)
+        if key.startswith("gsk_"):
+            return ChatGroq(model_name="llama3-8b-8192", temperature=0, groq_api_key=key)
+        else:
+            return ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, openai_api_key=key)
     else:
         # Fallback or mock if no key
         return None
