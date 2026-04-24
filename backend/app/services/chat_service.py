@@ -21,8 +21,8 @@ def generate_response(query: str, history: list, selected_file: str = None):
     # Pass filter to vector store if a specific file is selected
     filter_dict = {"source": selected_file} if selected_file else None
     
-    # Retrieve a high number of chunks (k=30) to give LLM maximum context for aggregation tasks
-    docs = search_documents(query, k=30, filter=filter_dict)
+    # Retrieve a lower number of chunks to stay within Groq's free tier token limits (6000 TPM limit)
+    docs = search_documents(query, k=4, filter=filter_dict)
     
     if not docs:
         context = "No relevant context found in documents."
