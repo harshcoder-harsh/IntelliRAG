@@ -15,13 +15,18 @@ class ChatResponse(BaseModel):
     answer: str
     citations: List[str] = []
 
+import asyncio
+
 @router.post("/", response_model=ChatResponse)
-def chat(request: ChatRequest):
+async def chat(request: ChatRequest):
     try:
         # Save user message
         save_message("user", request.message)
         
-        response_text, citations = generate_response(request.message, request.history, request.selected_file)
+        # Run generate_response in a background thread
+        response_text, citations = await asyncio.to_thread(
+            generate_response, request.message, request.history, request.selected_file
+        )
         
         # Save AI response
         save_message("assistant", response_text)
@@ -32,9 +37,10 @@ def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/history")
-def fetch_history():
+async def fetch_history():
     try:
-        history = get_history()
+        # get_history is very fast, running it directly is okay, but can also to_thread
+        history = await asyncio.to_thread(get_history)
         return {"history": history}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

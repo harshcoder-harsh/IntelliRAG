@@ -40,9 +40,9 @@ def generate_response(query: str, history: list, selected_file: str = None):
         citations = list(citations_set)
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are an intelligent and thorough AI assistant. Your task is to provide extremely detailed, comprehensive answers based ONLY on the provided context.\n"
-                   "Read the context carefully and extract every single detail, from big concepts to minor data points, related to the user's question.\n"
-                   "Do not summarize too briefly. List out all relevant information found in the context. If the context does not contain the answer, explicitly state that.\n\nContext:\n{context}"),
+        ("system", "You are an intelligent and helpful AI assistant. Your task is to answer the user's question using the provided context from their documents.\n"
+                   "If the user asks for a general explanation, summary, or overview, synthesize all the provided context chunks into a comprehensive, detailed response.\n"
+                   "Extract as much relevant detail as possible. If the context does not contain the exact answer, clearly state that, but still provide any related information found in the context.\n\nContext:\n{context}"),
         ("human", "{query}")
     ])
     
