@@ -165,11 +165,11 @@ export default function Home() {
                   </div>
                   <div className="text-center">
                     <span className="text-sm font-semibold block mb-1">Upload Documents</span>
-                    <span className="text-xs text-zinc-500">PDF, DOCX, TXT</span>
+                    <span className="text-xs text-zinc-500">PDF, DOCX, TXT, CSV</span>
                   </div>
                 </div>
               )}
-              <input type="file" multiple className="hidden" onChange={handleFileUpload} accept=".pdf,.docx,.txt" disabled={isUploading} />
+              <input type="file" multiple className="hidden" onChange={handleFileUpload} accept=".pdf,.docx,.txt,.csv" disabled={isUploading} />
             </label>
           </div>
 
