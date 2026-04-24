@@ -22,7 +22,7 @@ def generate_response(query: str, history: list, selected_file: str = None):
     filter_dict = {"source": selected_file} if selected_file else None
     
     # Retrieve a lower number of chunks to stay within Groq's free tier token limits (6000 TPM limit)
-    docs = search_documents(query, k=4, filter=filter_dict)
+    docs = search_documents(query, k=2, filter=filter_dict)
     
     if not docs:
         context = "No relevant context found in documents."
@@ -64,7 +64,7 @@ async def generate_response_stream(query: str, history: list, selected_file: str
     # Pass filter to vector store if a specific file is selected
     filter_dict = {"source": selected_file} if selected_file else None
     
-    docs = search_documents(query, k=4, filter=filter_dict)
+    docs = search_documents(query, k=2, filter=filter_dict)
     
     # Format context
     context = "\n\n".join([f"Document: {d.metadata.get('source', 'Unknown')}\nContent: {d.page_content}" for d in docs])

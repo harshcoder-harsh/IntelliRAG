@@ -42,7 +42,7 @@ def remove_document(filename: str):
         
     return True
 
-def search_documents(query, k=4, filter=None):
+def search_documents(query, k=2, filter=None):
     store = get_vector_store()
     if store is None:
         return []
