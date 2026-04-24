@@ -101,9 +101,17 @@ export default function Home() {
     const selectedFiles = e.target.files;
     if (!selectedFiles || selectedFiles.length === 0) return;
 
+    let hasLargeFile = false;
     const formData = new FormData();
     for (let i = 0; i < selectedFiles.length; i++) {
+      if (selectedFiles[i].size > 5 * 1024 * 1024) { // 5MB
+        hasLargeFile = true;
+      }
       formData.append('files', selectedFiles[i]);
+    }
+
+    if (hasLargeFile) {
+      alert("You selected a large file (>5MB). Processing this locally on your CPU may take several minutes. Please be patient while it says 'Processing...'.");
     }
 
     setIsUploading(true);

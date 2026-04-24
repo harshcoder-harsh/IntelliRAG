@@ -16,7 +16,7 @@ class ChatResponse(BaseModel):
     citations: List[str] = []
 
 @router.post("/", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+def chat(request: ChatRequest):
     try:
         # Save user message
         save_message("user", request.message)
@@ -32,7 +32,7 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/history")
-async def fetch_history():
+def fetch_history():
     try:
         history = get_history()
         return {"history": history}

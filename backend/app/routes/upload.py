@@ -9,7 +9,7 @@ from app.rag.vector_store import remove_document
 router = APIRouter()
 
 @router.post("/")
-async def upload_files(files: List[UploadFile] = File(...)):
+def upload_files(files: List[UploadFile] = File(...)):
     results = []
     for file in files:
         if file.filename == "":
@@ -39,7 +39,7 @@ async def upload_files(files: List[UploadFile] = File(...)):
     return {"results": results}
 
 @router.get("/files")
-async def list_files():
+def list_files():
     try:
         if not os.path.exists(settings.UPLOAD_DIR):
             return {"files": []}
@@ -51,7 +51,7 @@ async def list_files():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/files/{filename}")
-async def delete_file(filename: str):
+def delete_file(filename: str):
     file_path = os.path.join(settings.UPLOAD_DIR, filename)
     if os.path.exists(file_path):
         os.remove(file_path)
