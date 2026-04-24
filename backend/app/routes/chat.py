@@ -9,6 +9,7 @@ router = APIRouter()
 class ChatRequest(BaseModel):
     message: str
     history: Optional[List[dict]] = []
+    api_key: Optional[str] = None
 
 class ChatResponse(BaseModel):
     answer: str
@@ -20,7 +21,7 @@ async def chat(request: ChatRequest):
         # Save user message
         save_message("user", request.message)
         
-        response_text, citations = generate_response(request.message, request.history)
+        response_text, citations = generate_response(request.message, request.history, request.api_key)
         
         # Save AI response
         save_message("assistant", response_text)

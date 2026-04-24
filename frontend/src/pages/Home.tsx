@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Upload, FileText, Bot, User, Loader2, File, Trash2, X } from 'lucide-react';
+import { Send, Upload, FileText, Bot, User, Loader2, File, Trash2, X, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
@@ -20,6 +20,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('openai_api_key') || '');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const fetchFiles = async () => {
@@ -71,7 +73,8 @@ export default function Home() {
       
       const response = await axios.post(`${API_URL}/chat/`, {
         message: userMessage,
-        history: history
+        history: history,
+        api_key: apiKey
       });
 
       setMessages(prev => [
@@ -125,18 +128,31 @@ export default function Home() {
     }
   };
 
+  const handleSaveSettings = () => {
+    localStorage.setItem('openai_api_key', apiKey);
+    setIsSettingsOpen(false);
+  };
+
   return (
     <div className="flex h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-indigo-500/30">
       {/* Sidebar */}
       <div className="w-80 border-r border-zinc-800 bg-zinc-900/50 flex flex-col shadow-2xl z-10 relative">
-        <div className="p-6 border-b border-zinc-800 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <Bot className="w-6 h-6 text-white" />
+        <div className="p-6 border-b border-zinc-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+              <Bot className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="font-bold text-lg tracking-tight text-white">IntelliRAG</h1>
+              <p className="text-xs text-zinc-400 font-medium">AI Document Assistant</p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-bold text-lg tracking-tight text-white">IntelliRAG</h1>
-            <p className="text-xs text-zinc-400 font-medium">AI Document Assistant</p>
-          </div>
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
@@ -303,6 +319,69 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Settings Modal */}
+      <AnimatePresence>
+        {isSettingsOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-zinc-800">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Settings className="w-5 h-5 text-indigo-400" />
+                  Settings
+                </h2>
+                <button
+                  onClick={() => setIsSettingsOpen(false)}
+                  className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    OpenAI API Key
+                  </label>
+                  <input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="sk-..."
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                  />
+                  <p className="mt-2 text-xs text-zinc-500">
+                    Your API key is stored locally in your browser and never saved on our servers.
+                  </p>
+                </div>
+              </div>
+              <div className="p-6 border-t border-zinc-800 flex justify-end gap-3 bg-zinc-900/50">
+                <button
+                  onClick={() => setIsSettingsOpen(false)}
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveSettings}
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/20"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

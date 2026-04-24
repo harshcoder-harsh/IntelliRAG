@@ -4,14 +4,15 @@ from langchain_core.prompts import ChatPromptTemplate
 from app.config import settings
 
 # In a real app, you might want to use a local LLM or configure this properly
-def get_llm():
-    if settings.OPENAI_API_KEY:
-        return ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+def get_llm(api_key: str = None):
+    key = api_key or settings.OPENAI_API_KEY
+    if key:
+        return ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, openai_api_key=key)
     else:
         # Fallback or mock if no key
         return None
 
-def generate_response(query: str, history: list):
+def generate_response(query: str, history: list, api_key: str = None):
     docs = search_documents(query)
     
     if not docs:
@@ -34,7 +35,7 @@ def generate_response(query: str, history: list):
         ("human", "{query}")
     ])
     
-    llm = get_llm()
+    llm = get_llm(api_key)
     if llm is None:
         # Mock response for testing without API key
         answer = f"This is a mock response because OPENAI_API_KEY is not set.\n\nBased on your query '{query}', I found {len(docs)} relevant chunks.\n\nContext excerpt: {context[:100]}..."
