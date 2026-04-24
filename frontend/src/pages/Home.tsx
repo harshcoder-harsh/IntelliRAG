@@ -262,17 +262,6 @@ export default function Home() {
                       <p className="text-[15px] leading-relaxed">{msg.content}</p>
                     )}
                   </div>
-                  
-                  {msg.citations && msg.citations.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {msg.citations.map((cite, i) => (
-                        <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium">
-                          <FileText className="w-3 h-3" />
-                          {cite}
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </motion.div>
             ))}

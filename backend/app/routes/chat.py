@@ -26,7 +26,8 @@ async def chat(request: ChatRequest):
         # Save AI response
         save_message("assistant", response_text)
         
-        return ChatResponse(answer=response_text, citations=citations)
+        # Override citations to never return any files
+        return ChatResponse(answer=response_text, citations=[])
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
