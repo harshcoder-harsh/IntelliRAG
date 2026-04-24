@@ -37,9 +37,15 @@ export default function Home() {
 
   const fetchHistory = async () => {
     try {
-      const response = await axios.get(`${API_URL}/chat/history`);
+      let url = `${API_URL}/chat/history`;
+      if (selectedFile) {
+        url += `?file=${encodeURIComponent(selectedFile)}`;
+      }
+      const response = await axios.get(url);
       if (response.data.history && response.data.history.length > 0) {
         setMessages(response.data.history);
+      } else {
+        setMessages([{ role: 'assistant', content: 'Hello! I am IntelliRAG, your intelligent document assistant. Upload some documents and ask me anything about them.' }]);
       }
     } catch (error) {
       console.error('Error fetching history:', error);
@@ -48,8 +54,11 @@ export default function Home() {
 
   useEffect(() => {
     fetchFiles();
-    fetchHistory();
   }, []);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [selectedFile]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

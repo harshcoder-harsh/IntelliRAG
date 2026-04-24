@@ -21,8 +21,9 @@ import asyncio
 @router.post("/", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
+        session_id = request.selected_file or "general"
         # Save user message
-        save_message("user", request.message)
+        save_message("user", request.message, session_id)
         
         # Run generate_response in a background thread
         response_text, citations = await asyncio.to_thread(
@@ -30,7 +31,7 @@ async def chat(request: ChatRequest):
         )
         
         # Save AI response
-        save_message("assistant", response_text)
+        save_message("assistant", response_text, session_id)
         
         # Override citations to never return any files
         return ChatResponse(answer=response_text, citations=[])
@@ -40,8 +41,9 @@ async def chat(request: ChatRequest):
 @router.post("/stream")
 async def chat_stream(request: ChatRequest):
     try:
+        session_id = request.selected_file or "general"
         # Save user message
-        save_message("user", request.message)
+        save_message("user", request.message, session_id)
         
         async def event_generator():
             full_response = ""
@@ -50,16 +52,17 @@ async def chat_stream(request: ChatRequest):
                 yield chunk
                 
             # After streaming completes, save the full response to database
-            save_message("assistant", full_response)
+            save_message("assistant", full_response, session_id)
             
         return StreamingResponse(event_generator(), media_type="text/event-stream")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 @router.get("/history")
-async def fetch_history():
+async def fetch_history(file: Optional[str] = None):
     try:
+        session_id = file or "general"
         # get_history is very fast, running it directly is okay, but can also to_thread
-        history = await asyncio.to_thread(get_history)
+        history = await asyncio.to_thread(get_history, session_id)
         return {"history": history}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
