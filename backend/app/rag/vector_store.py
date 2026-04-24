@@ -1,6 +1,6 @@
 import os
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from app.config import settings
 
 embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
@@ -20,6 +20,26 @@ def add_documents(documents):
         store.add_documents(documents)
     
     store.save_local(vector_store_path)
+    return True
+
+def remove_document(filename: str):
+    store = get_vector_store()
+    if store is None:
+        return False
+        
+    # Get all documents/ids
+    docstore = store.docstore._dict
+    
+    # Find IDs to delete
+    ids_to_delete = []
+    for doc_id, doc in docstore.items():
+        if doc.metadata.get("source") == filename:
+            ids_to_delete.append(doc_id)
+            
+    if ids_to_delete:
+        store.delete(ids_to_delete)
+        store.save_local(vector_store_path)
+        
     return True
 
 def search_documents(query, k=8, filter=None):
