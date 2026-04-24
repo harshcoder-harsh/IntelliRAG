@@ -10,7 +10,7 @@ def get_llm():
     if key:
         # Check if it's a groq key (usually starts with gsk_)
         if key.startswith("gsk_"):
-            return ChatGroq(model_name="llama3-8b-8192", temperature=0, groq_api_key=key)
+            return ChatGroq(model_name="llama-3.1-8b-instant", temperature=0, groq_api_key=key)
         else:
             return ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, openai_api_key=key)
     else:
