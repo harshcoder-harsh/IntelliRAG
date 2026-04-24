@@ -47,6 +47,6 @@ def search_documents(query, k=4, filter=None):
     if store is None:
         return []
     
-    # FAISS similarity_search accepts a filter dict
-    docs = store.similarity_search(query, k=k, filter=filter)
+    # FAISS similarity_search post-filters. fetch_k ensures we retrieve enough docs from FAISS before filtering.
+    docs = store.similarity_search(query, k=k, filter=filter, fetch_k=10000)
     return docs
