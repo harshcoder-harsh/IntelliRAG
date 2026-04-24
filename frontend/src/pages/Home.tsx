@@ -23,6 +23,9 @@ export default function Home() {
   const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const [streamingContent, setStreamingContent] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+
   const fetchFiles = async () => {
     try {
       const response = await axios.get(`${API_URL}/upload/files`);
@@ -54,16 +57,18 @@ export default function Home() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading]);
+  }, [messages, isLoading, streamingContent]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || isStreaming) return;
 
     const userMessage = input.trim();
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
+    setIsStreaming(true);
+    setStreamingContent('');
 
     try {
       // In a real app, you would pass previous history.
@@ -76,14 +81,43 @@ export default function Home() {
         selected_file: selectedFile
       };
       
-      const response = await axios.post(`${API_URL}/chat/`, payload);
+      const response = await fetch(`${API_URL}/chat/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      setIsLoading(false); // Stop loading animation, start streaming
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let done = false;
+      let fullContent = '';
+
+      if (reader) {
+        while (!done) {
+          const { value, done: readerDone } = await reader.read();
+          done = readerDone;
+          if (value) {
+            const chunk = decoder.decode(value, { stream: true });
+            fullContent += chunk;
+            setStreamingContent(fullContent);
+          }
+        }
+      }
 
       setMessages(prev => [
         ...prev,
         {
           role: 'assistant',
-          content: response.data.answer,
-          citations: response.data.citations
+          content: fullContent,
         }
       ]);
     } catch (error) {
@@ -94,6 +128,8 @@ export default function Home() {
       ]);
     } finally {
       setIsLoading(false);
+      setIsStreaming(false);
+      setStreamingContent('');
     }
   };
 
@@ -281,10 +317,26 @@ export default function Home() {
                 <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/20">
                   <Bot className="w-5 h-5 text-white" />
                 </div>
-                <div className="bg-zinc-900/80 border border-zinc-800/50 rounded-3xl rounded-tl-sm p-5 backdrop-blur-sm flex items-center gap-2">
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="bg-zinc-900/80 border border-zinc-800/50 rounded-3xl rounded-tl-sm p-5 backdrop-blur-sm flex items-center gap-3">
+                  <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
+                  <span className="text-sm font-medium text-zinc-400 animate-pulse">Thinking...</span>
+                </div>
+              </motion.div>
+            )}
+
+            {isStreaming && streamingContent && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-5 flex-row">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/20">
+                  <Bot className="w-5 h-5 text-white" />
+                </div>
+                
+                <div className="max-w-[80%] flex flex-col gap-2 items-start">
+                  <div className="p-5 rounded-3xl bg-zinc-900/80 border border-zinc-800/50 text-zinc-300 rounded-tl-sm backdrop-blur-sm">
+                    <div className="prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-zinc-950 prose-pre:border prose-pre:border-zinc-800 relative flex items-end">
+                      <ReactMarkdown>{streamingContent}</ReactMarkdown>
+                      <span className="inline-block w-1.5 h-4 ml-1 bg-indigo-500 animate-pulse rounded-sm"></span>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}

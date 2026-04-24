@@ -5,14 +5,14 @@ from langchain_core.prompts import ChatPromptTemplate
 from app.config import settings
 
 # In a real app, you might want to use a local LLM or configure this properly
-def get_llm():
+def get_llm(streaming: bool = False):
     key = settings.GROQ_API_KEY or settings.OPENAI_API_KEY
     if key:
         # Check if it's a groq key (usually starts with gsk_)
         if key.startswith("gsk_"):
-            return ChatGroq(model_name="llama-3.1-8b-instant", temperature=0, groq_api_key=key)
+            return ChatGroq(model_name="llama-3.1-8b-instant", temperature=0, groq_api_key=key, streaming=streaming)
         else:
-            return ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, openai_api_key=key)
+            return ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, openai_api_key=key, streaming=streaming)
     else:
         # Fallback or mock if no key
         return None
@@ -46,7 +46,7 @@ def generate_response(query: str, history: list, selected_file: str = None):
         ("human", "{query}")
     ])
     
-    llm = get_llm()
+    llm = get_llm(streaming=False)
     if llm is None:
         # Mock response for testing without API key
         answer = f"This is a mock response because OPENAI_API_KEY is not set.\n\nBased on your query '{query}', I found {len(docs)} relevant chunks.\n\nContext excerpt: {context[:100]}..."
@@ -59,3 +59,29 @@ def generate_response(query: str, history: list, selected_file: str = None):
     })
     
     return response.content, citations
+
+async def generate_response_stream(query: str, history: list, selected_file: str = None):
+    # Pass filter to vector store if a specific file is selected
+    filter_dict = {"source": selected_file} if selected_file else None
+    
+    docs = search_documents(query, k=4, filter=filter_dict)
+    
+    # Format context
+    context = "\n\n".join([f"Document: {d.metadata.get('source', 'Unknown')}\nContent: {d.page_content}" for d in docs])
+    
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are an intelligent and helpful AI assistant. Your task is to answer the user's question using the provided context from their documents.\n"
+                   "If the user asks for a general explanation, summary, or overview, synthesize all the provided context chunks into a comprehensive, detailed response.\n"
+                   "Extract as much relevant detail as possible. If the context does not contain the exact answer, clearly state that, but still provide any related information found in the context.\n\nContext:\n{context}"),
+        ("human", "{query}")
+    ])
+    
+    llm = get_llm(streaming=True)
+    if llm is None:
+        yield "This is a mock response because OPENAI_API_KEY is not set.\n\n"
+        return
+
+    chain = prompt | llm
+    
+    async for chunk in chain.astream({"context": context, "query": query}):
+        yield chunk.content
