@@ -16,3 +16,4 @@ SQLAlchemy==2.0.29
 python-dotenv==1.0.1
 docx2txt==0.8
 langchain-groq>=0.1.0
+langchain-huggingface>=0.0.1
