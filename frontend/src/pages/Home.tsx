@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Send, Upload, FileText, Bot, User, Loader2, File, Trash2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -279,6 +280,19 @@ export default function Home() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* User Section */}
+        <div className="p-4 border-t border-zinc-800">
+          <Link to="/signin" className="flex items-center gap-3 w-full p-2 hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400 hover:text-white">
+            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+              <User className="w-4 h-4" />
+            </div>
+            <div className="text-left flex-1">
+              <p className="text-sm font-medium">Sign In</p>
+              <p className="text-xs text-zinc-500">Sync your chats</p>
+            </div>
+          </Link>
         </div>
       </div>
 
