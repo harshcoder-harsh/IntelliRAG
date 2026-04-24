@@ -5,8 +5,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from app.config import settings
 
 # In a real app, you might want to use a local LLM or configure this properly
-def get_llm(api_key: str = None):
-    key = api_key or settings.OPENAI_API_KEY
+def get_llm():
+    key = settings.GROQ_API_KEY or settings.OPENAI_API_KEY
     if key:
         # Check if it's a groq key (usually starts with gsk_)
         if key.startswith("gsk_"):
@@ -17,7 +17,7 @@ def get_llm(api_key: str = None):
         # Fallback or mock if no key
         return None
 
-def generate_response(query: str, history: list, api_key: str = None):
+def generate_response(query: str, history: list):
     docs = search_documents(query)
     
     if not docs:
@@ -40,7 +40,7 @@ def generate_response(query: str, history: list, api_key: str = None):
         ("human", "{query}")
     ])
     
-    llm = get_llm(api_key)
+    llm = get_llm()
     if llm is None:
         # Mock response for testing without API key
         answer = f"This is a mock response because OPENAI_API_KEY is not set.\n\nBased on your query '{query}', I found {len(docs)} relevant chunks.\n\nContext excerpt: {context[:100]}..."

@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
     VECTOR_STORE_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "vector_store")
     OPENAI_API_KEY: str | None = None
+    GROQ_API_KEY: str | None = "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"
     
     class Config:
         env_file = ".env"
