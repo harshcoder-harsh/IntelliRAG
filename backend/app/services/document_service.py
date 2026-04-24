@@ -13,19 +13,19 @@ def process_and_store_document(file_path: str):
         loader = PyPDFLoader(file_path)
     elif extension == '.docx':
         loader = Docx2txtLoader(file_path)
-    elif extension == '.txt':
-        loader = TextLoader(file_path)
-    elif extension == '.csv':
-        loader = CSVLoader(file_path)
+    elif extension == '.txt' or extension == '.csv':
+        # Treat CSVs as plain text so the splitter can group many rows into a single large chunk.
+        # CSVLoader creates 1 document per row, which breaks aggregation queries.
+        loader = TextLoader(file_path, autodetect_encoding=True)
     else:
         raise ValueError(f"Unsupported file format: {extension}")
         
     documents = loader.load()
     
-    # Split documents with smaller chunks and higher overlap to capture more details
+    # Split documents with larger chunks to keep tabular data together
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=100,
+        chunk_size=2500,
+        chunk_overlap=250,
         length_function=len
     )
     chunks = text_splitter.split_documents(documents)
