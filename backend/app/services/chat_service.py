@@ -38,7 +38,9 @@ def generate_response(query: str, history: list, selected_file: str = None):
         citations = list(citations_set)
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are an intelligent AI assistant. Use the following retrieved context to answer the user's question. If you cannot answer based on the context, say so.\n\nContext:\n{context}"),
+        ("system", "You are an intelligent and thorough AI assistant. Your task is to provide extremely detailed, comprehensive answers based ONLY on the provided context.\n"
+                   "Read the context carefully and extract every single detail, from big concepts to minor data points, related to the user's question.\n"
+                   "Do not summarize too briefly. List out all relevant information found in the context. If the context does not contain the answer, explicitly state that.\n\nContext:\n{context}"),
         ("human", "{query}")
     ])
     

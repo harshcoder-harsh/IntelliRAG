@@ -20,10 +20,10 @@ def process_and_store_document(file_path: str):
         
     documents = loader.load()
     
-    # Split documents
+    # Split documents with smaller chunks and higher overlap to capture more details
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
+        chunk_size=500,
+        chunk_overlap=100,
         length_function=len
     )
     chunks = text_splitter.split_documents(documents)
