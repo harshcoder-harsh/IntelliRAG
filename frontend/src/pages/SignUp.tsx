@@ -1,19 +1,43 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Bot, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Bot, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
+
+const API_URL = 'http://localhost:8000/api';
 
 export default function SignUp() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Placeholder logic for sign up
-    localStorage.setItem('user', name);
-    navigate('/');
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Registration failed');
+      }
+
+      localStorage.setItem('user', data.user.name);
+      navigate('/');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -65,6 +89,11 @@ export default function SignUp() {
         </div>
 
         <form onSubmit={handleSignUp} className="space-y-5">
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm text-center">
+              {error}
+            </div>
+          )}
           <div className="space-y-1">
             <label className="text-xs font-medium text-zinc-300 ml-1">Full Name</label>
             <div className="relative group">
@@ -118,10 +147,15 @@ export default function SignUp() {
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 border border-transparent rounded-xl text-sm font-semibold text-white bg-white/10 hover:bg-white/20 border-white/10 hover:border-white/20 backdrop-blur-md transition-all mt-6 group shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:shadow-[0_0_25px_rgba(255,255,255,0.1)]"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 border border-transparent rounded-xl text-sm font-semibold text-white bg-white/10 hover:bg-white/20 border-white/10 hover:border-white/20 backdrop-blur-md transition-all mt-6 group shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:shadow-[0_0_25px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign Up
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+              <>
+                Sign Up
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </>
+            )}
           </button>
         </form>
 
