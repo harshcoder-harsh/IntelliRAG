@@ -12,7 +12,7 @@ export default function SignUp() {
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     // Placeholder logic for sign up
-    console.log('Signing up with', name, email, password);
+    localStorage.setItem('user', name);
     navigate('/');
   };
 

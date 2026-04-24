@@ -22,6 +22,7 @@ export default function Home() {
   const [files, setFiles] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [streamingContent, setStreamingContent] = useState('');
@@ -55,7 +56,14 @@ export default function Home() {
 
   useEffect(() => {
     fetchFiles();
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) setCurrentUser(storedUser);
   }, []);
+
+  const handleSignOut = () => {
+    localStorage.removeItem('user');
+    setCurrentUser(null);
+  };
 
   useEffect(() => {
     fetchHistory();
@@ -283,17 +291,37 @@ export default function Home() {
         </div>
 
         {/* User Section */}
-        <div className="p-4 border-t border-zinc-800">
-          <Link to="/signin" className="flex items-center gap-3 w-full p-2 hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400 hover:text-white">
-            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
-              <User className="w-4 h-4" />
-            </div>
-            <div className="text-left flex-1">
-              <p className="text-sm font-medium">Sign In</p>
-              <p className="text-xs text-zinc-500">Sync your chats</p>
-            </div>
-          </Link>
-        </div>
+          <div className="p-4 border-t border-zinc-800">
+            {currentUser ? (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 w-full p-2 bg-zinc-800/50 rounded-xl border border-zinc-700/50">
+                  <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
+                    <span className="text-sm font-bold text-white uppercase">{currentUser.charAt(0)}</span>
+                  </div>
+                  <div className="text-left flex-1 overflow-hidden">
+                    <p className="text-sm font-medium text-white truncate">{currentUser}</p>
+                    <p className="text-xs text-zinc-400">Pro Plan</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={handleSignOut}
+                  className="text-xs font-medium text-zinc-500 hover:text-red-400 text-center transition-colors py-1"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <Link to="/signin" className="flex items-center gap-3 w-full p-2 hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400 hover:text-white">
+                <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                  <User className="w-4 h-4" />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="text-sm font-medium">Sign In</p>
+                  <p className="text-xs text-zinc-500">Sync your chats</p>
+                </div>
+              </Link>
+            )}
+          </div>
       </div>
 
       {/* Main Chat Area */}

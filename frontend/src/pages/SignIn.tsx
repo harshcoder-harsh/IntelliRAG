@@ -11,7 +11,7 @@ export default function SignIn() {
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
     // Placeholder logic for sign in
-    console.log('Signing in with', email, password);
+    localStorage.setItem('user', email.split('@')[0]);
     navigate('/');
   };
 
