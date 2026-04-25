@@ -60,13 +60,15 @@ async def upload_files(files: List[UploadFile] = File(...)):
                 "summary": summary
             })
         except Exception as e:
-            print(f"Error processing {file.filename}: {e}")
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"Error processing {file.filename}: {e}\n{error_details}")
             results.append({
                 "filename": file.filename,
                 "status": "error",
                 "message": str(e)
             })
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=f"{str(e)} - Check server logs for full traceback.")
             
     return {"results": results}
 

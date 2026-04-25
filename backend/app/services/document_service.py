@@ -10,8 +10,11 @@ from pdf2image import convert_from_path
 # Configure paths if necessary for macOS brew installations
 if os.path.exists('/opt/homebrew/bin/tesseract'):
     pytesseract.pytesseract.tesseract_cmd = '/opt/homebrew/bin/tesseract'
+elif os.path.exists('/usr/bin/tesseract'): # Linux/Render fallback
+    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
 
 POPPLER_PATH = '/opt/homebrew/bin' if os.path.exists('/opt/homebrew/bin/pdftoppm') else None
+# If on Linux (like Render), pdftoppm is in /usr/bin which is default PATH, so None is fine.
 
 def process_and_store_document(file_path: str):
     """
