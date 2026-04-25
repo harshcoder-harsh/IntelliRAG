@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 interface Message {
   role: 'user' | 'assistant';

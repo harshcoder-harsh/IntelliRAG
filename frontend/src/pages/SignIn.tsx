@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Bot, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
