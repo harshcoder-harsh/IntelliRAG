@@ -6,8 +6,8 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api"
     UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
     VECTOR_STORE_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "vector_store")
-    OPENAI_API_KEY: str | None = None
-    GROQ_API_KEY: str | None = None
+    OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
+    GROQ_API_KEY: str | None = os.getenv("GROQ_API_KEY")
     
     class Config:
         env_file = ".env"
