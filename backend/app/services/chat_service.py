@@ -141,8 +141,11 @@ async def generate_response_stream(query: str, history: list, selected_file: str
     
     chain = prompt | llm
     
-    async for chunk in chain.astream({"context": context, "query": query}):
-        yield chunk.content
+    try:
+        async for chunk in chain.astream({"context": context, "query": query}):
+            yield chunk.content
+    except Exception as e:
+        yield f"\n\n[Error generating response: {str(e)}]"
 
 def generate_summary_for_file(filename: str):
     docs = search_documents("overview summary introduction main points", k=2, filter={"source": filename})
@@ -176,15 +179,15 @@ async def generate_compare_stream(file1: str, file2: str, query: str):
     context += f"\n\n--- Document B ({file2}) ---\n"
     context += "\n".join([d.page_content for d in docs2])
     
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are an intelligent AI assistant. Compare the two provided documents based on the given context. Address their similarities, differences, and main themes.\n\nContext:\n{context}"),
-        ("human", "{query}")
-    ])
-    
     llm = get_llm(streaming=True)
     if llm is None:
         yield "API key not configured."
         return
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are an intelligent AI assistant. Compare the two provided documents based on the given context. Address their similarities, differences, and main themes.\n\nContext:\n{context}"),
+        ("human", "{query}")
+    ])
 
     chain = prompt | llm
     
@@ -192,4 +195,4 @@ async def generate_compare_stream(file1: str, file2: str, query: str):
         async for chunk in chain.astream({"context": context, "query": query}):
             yield chunk.content
     except Exception as e:
-        yield f"\n\nError during comparison: {str(e)}"
+        yield f"\n\n[Error during comparison: {str(e)}]"

@@ -62,13 +62,19 @@ async def chat_stream(request: ChatRequest):
         
         async def event_generator():
             full_response = ""
-            async for chunk in generate_response_stream(request.message, request.history, request.selected_file, request.web_search):
-                full_response += chunk
-                yield chunk
+            try:
+                async for chunk in generate_response_stream(request.message, request.history, request.selected_file, request.web_search):
+                    full_response += chunk
+                    yield chunk
+                    
+                # After streaming completes, save the full response to database
+                save_message("assistant", full_response, session_id)
+            except Exception as e:
+                error_msg = f"\n\n[Connection Error: {str(e)}]"
+                full_response += error_msg
+                yield error_msg
+                save_message("assistant", full_response, session_id)
                 
-            # After streaming completes, save the full response to database
-            save_message("assistant", full_response, session_id)
-            
         return StreamingResponse(event_generator(), media_type="text/event-stream")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
