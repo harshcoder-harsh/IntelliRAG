@@ -19,7 +19,7 @@ IntelliRAG is a premium, Series-A startup-grade AI document intelligence platfor
 ### System Architecture
 ```mermaid
 graph TD
-    User([User]) --> UI["IntelliRAG Dashboard"]
+    User(["User"]) --> UI["IntelliRAG Dashboard"]
     UI --> User
     UI --> Backend["FastAPI Backend"]
     Backend --> UI
@@ -43,8 +43,8 @@ graph TD
         Context --> LLM["LLM Groq or OpenAI"]
     end
 
-    Backend --> Document Processing
-    Backend --> Query Routing
+    Backend --> Process
+    Backend --> Query
 ```
 
 ### Chat Streaming Sequence
