@@ -21,3 +21,5 @@ build/
 backend/vector_store/
 backend/*.db
 backend/uploads/
+backend/.env
+backend/.env.local
