@@ -48,5 +48,6 @@ def search_documents(query, k=2, filter=None):
         return []
     
     # FAISS similarity_search post-filters. fetch_k ensures we retrieve enough docs from FAISS before filtering.
-    docs = store.similarity_search(query, k=k, filter=filter, fetch_k=10000)
+    # Limit fetch_k to reduce memory consumption on free tier
+    docs = store.similarity_search(query, k=k, filter=filter, fetch_k=100)
     return docs

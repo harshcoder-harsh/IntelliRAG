@@ -46,6 +46,9 @@ async def upload_files(files: List[UploadFile] = File(...)):
             with open(file_path, "wb") as buffer:
                 buffer.write(content)
                 
+            # Clear memory explicitly
+            del content
+            
             # Process and store in Vector DB in a background thread to prevent blocking
             chunks_count = await asyncio.to_thread(process_and_store_document, file_path)
             
