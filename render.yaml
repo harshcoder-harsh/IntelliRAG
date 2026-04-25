@@ -1,0 +1,24 @@
+version: "3"
+services:
+  - type: web
+    name: intellirag-api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    region: ohio
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: VECTOR_STORE_DIR
+        value: ./data/vector_store
+      - key: UPLOAD_DIR
+        value: ./data/uploads
+      - key: DATABASE_URL
+        value: sqlite:///./data/rag_app.db
+    disk:
+      name: intellirag-storage
+      mountPath: /app/data
+      sizeGB: 1
