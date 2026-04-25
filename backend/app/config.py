@@ -4,8 +4,8 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     PROJECT_NAME: str = "IntelliRAG Chatbot"
     API_V1_STR: str = "/api"
-    UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
-    VECTOR_STORE_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "vector_store")
+    VECTOR_STORE_DIR: str = os.getenv("VECTOR_STORE_DIR", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "vector_store"))
+    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads"))
     OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
     GROQ_API_KEY: str | None = os.getenv("GROQ_API_KEY")
     
