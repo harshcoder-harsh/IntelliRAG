@@ -2,21 +2,36 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional
-from app.services.chat_service import generate_response, generate_response_stream
+from app.services.chat_service import generate_response, generate_response_stream, generate_compare_stream
+import asyncio
 from app.models.database import save_message, get_history
 
 router = APIRouter()
 
 class ChatRequest(BaseModel):
     message: str
-    history: Optional[List[dict]] = []
+    history: List[dict] = []
     selected_file: Optional[str] = None
+    web_search: Optional[bool] = False
+
+class CompareRequest(BaseModel):
+    file1: str
+    file2: str
+    message: Optional[str] = "Compare the main topics, similarities, and differences between these two documents."
 
 class ChatResponse(BaseModel):
     answer: str
     citations: List[str] = []
 
-import asyncio
+@router.post("/compare")
+async def compare_stream(request: CompareRequest):
+    try:
+        async def event_generator():
+            async for chunk in generate_compare_stream(request.file1, request.file2, request.message):
+                yield chunk
+        return StreamingResponse(event_generator(), media_type="text/event-stream")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/", response_model=ChatResponse)
 async def chat(request: ChatRequest):
@@ -27,7 +42,7 @@ async def chat(request: ChatRequest):
         
         # Run generate_response in a background thread
         response_text, citations = await asyncio.to_thread(
-            generate_response, request.message, request.history, request.selected_file
+            generate_response, request.message, request.history, request.selected_file, request.web_search
         )
         
         # Save AI response
@@ -47,7 +62,7 @@ async def chat_stream(request: ChatRequest):
         
         async def event_generator():
             full_response = ""
-            async for chunk in generate_response_stream(request.message, request.history, request.selected_file):
+            async for chunk in generate_response_stream(request.message, request.history, request.selected_file, request.web_search):
                 full_response += chunk
                 yield chunk
                 

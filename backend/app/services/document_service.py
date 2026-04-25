@@ -1,7 +1,17 @@
 import os
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader, CSVLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
 from app.rag.vector_store import add_documents
+from PIL import Image
+import pytesseract
+from pdf2image import convert_from_path
+
+# Configure paths if necessary for macOS brew installations
+if os.path.exists('/opt/homebrew/bin/tesseract'):
+    pytesseract.pytesseract.tesseract_cmd = '/opt/homebrew/bin/tesseract'
+
+POPPLER_PATH = '/opt/homebrew/bin' if os.path.exists('/opt/homebrew/bin/pdftoppm') else None
 
 def process_and_store_document(file_path: str):
     """
@@ -11,6 +21,24 @@ def process_and_store_document(file_path: str):
     
     if extension == '.pdf':
         loader = PyPDFLoader(file_path)
+        documents = loader.load()
+        
+        # Check if PDF is likely a scanned image (very little extractable text)
+        total_text_length = sum(len(doc.page_content.strip()) for doc in documents)
+        if len(documents) == 0 or total_text_length < 50 * max(1, len(documents)):
+            print(f"[{os.path.basename(file_path)}] Very little text found. Attempting OCR on scanned PDF...")
+            images = convert_from_path(file_path, poppler_path=POPPLER_PATH)
+            documents = []
+            for i, image in enumerate(images):
+                text = pytesseract.image_to_string(image)
+                documents.append(Document(page_content=text, metadata={"source": os.path.basename(file_path), "page": i}))
+                
+    elif extension in ['.png', '.jpg', '.jpeg']:
+        print(f"[{os.path.basename(file_path)}] Processing image via OCR...")
+        image = Image.open(file_path)
+        text = pytesseract.image_to_string(image)
+        documents = [Document(page_content=text, metadata={"source": os.path.basename(file_path)})]
+        
     elif extension == '.docx':
         loader = Docx2txtLoader(file_path)
     elif extension == '.txt' or extension == '.csv':
@@ -20,7 +48,8 @@ def process_and_store_document(file_path: str):
     else:
         raise ValueError(f"Unsupported file format: {extension}")
         
-    documents = loader.load()
+    if extension not in ['.pdf', '.png', '.jpg', '.jpeg']:
+        documents = loader.load()
     
     # Split documents with larger chunks to keep tabular data together
     text_splitter = RecursiveCharacterTextSplitter(
