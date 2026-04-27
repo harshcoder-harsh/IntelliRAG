@@ -1,4 +1,3 @@
-version: "3"
 services:
   - type: web
     name: intellirag-api
@@ -13,12 +12,8 @@ services:
       - key: OPENAI_API_KEY
         sync: false
       - key: VECTOR_STORE_DIR
-        value: ./data/vector_store
+        value: ./vector_store
       - key: UPLOAD_DIR
-        value: ./data/uploads
+        value: ./uploads
       - key: DATABASE_URL
-        value: sqlite:///./data/rag_app.db
-    disk:
-      name: intellirag-storage
-      mountPath: /app/data
-      sizeGB: 1
+        value: sqlite:///./rag_app.db
