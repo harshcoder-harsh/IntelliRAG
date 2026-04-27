@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads"))
     OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
     GROQ_API_KEY: str | None = os.getenv("GROQ_API_KEY")
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "mongodb+srv://anmolk_db_user:eTJ0EGZcNQASsird@cluster0.emnl8mp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    DATABASE_URL: str = os.getenv("MONGO_URL", "mongodb+srv://anmolk_db_user:eTJ0EGZcNQASsird@cluster0.emnl8mp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
     
     class Config:
         env_file = ".env"
