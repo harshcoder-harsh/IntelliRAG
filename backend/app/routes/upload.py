@@ -6,30 +6,24 @@ from app.config import settings
 from app.services.document_service import process_and_store_document
 from app.services.chat_service import generate_summary_for_file
 from app.rag.vector_store import remove_document
-from app.models.database import SessionLocal, DocumentMetadata
+from app.models.database import documents_collection
 
 router = APIRouter()
 
 def save_document_metadata(filename: str, summary: str):
-    db = SessionLocal()
-    try:
-        doc = db.query(DocumentMetadata).filter(DocumentMetadata.filename == filename).first()
-        if not doc:
-            doc = DocumentMetadata(filename=filename, summary=summary)
-            db.add(doc)
-        else:
-            doc.summary = summary
-        db.commit()
-    finally:
-        db.close()
+    from datetime import datetime
+    documents_collection.update_one(
+        {"filename": filename},
+        {"$set": {
+            "filename": filename,
+            "summary": summary,
+            "uploaded_at": datetime.utcnow()
+        }},
+        upsert=True
+    )
 
 def delete_document_metadata(filename: str):
-    db = SessionLocal()
-    try:
-        db.query(DocumentMetadata).filter(DocumentMetadata.filename == filename).delete()
-        db.commit()
-    finally:
-        db.close()
+    documents_collection.delete_one({"filename": filename})
 
 @router.post("/")
 async def upload_files(files: List[UploadFile] = File(...)):
@@ -86,22 +80,19 @@ async def list_files():
 
 @router.get("/documents")
 async def list_documents():
-    db = SessionLocal()
     try:
-        docs = db.query(DocumentMetadata).all()
+        docs = documents_collection.find()
         return {
             "documents": [
                 {
-                    "filename": d.filename,
-                    "summary": d.summary,
-                    "uploaded_at": d.uploaded_at
+                    "filename": d["filename"],
+                    "summary": d.get("summary", ""),
+                    "uploaded_at": d.get("uploaded_at")
                 } for d in docs
             ]
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        db.close()
 
 @router.delete("/files/{filename}")
 async def delete_file(filename: str):
