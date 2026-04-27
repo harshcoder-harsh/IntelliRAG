@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Bot, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/$/, '');
+const VITE_API_URL = import.meta.env.VITE_API_URL;
+const API_URL = VITE_API_URL ? VITE_API_URL.replace(/\/$/, '') : 'https://intellirag-api.onrender.com/api';
 
 export default function SignUp() {
   const [name, setName] = useState('');

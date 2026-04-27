@@ -5,7 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/$/, '');
+// The import.meta.env values are evaluated at build time. We wrap the fallback in quotes
+// so that even if it's missing, the app doesn't crash trying to parse undefined.
+const VITE_API_URL = import.meta.env.VITE_API_URL;
+const API_URL = VITE_API_URL ? VITE_API_URL.replace(/\/$/, '') : 'https://intellirag-api.onrender.com/api';
 
 interface Message {
   role: 'user' | 'assistant';
