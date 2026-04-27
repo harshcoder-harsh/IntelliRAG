@@ -18,8 +18,9 @@ WORKDIR /app
 # Copy the requirements file
 COPY backend/requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install CPU-only PyTorch first, then install the rest
+RUN pip install --no-cache-dir torch==2.2.2+cpu --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy the backend source code
 COPY backend/ .
