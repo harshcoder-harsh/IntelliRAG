@@ -41,13 +41,10 @@ async def upload_files(files: List[UploadFile] = File(...)):
         file_path = os.path.join(settings.UPLOAD_DIR, file.filename)
         
         try:
-            # Read file safely in async route
-            content = await file.read()
+            # Stream file to disk instead of reading entire file into memory at once
             with open(file_path, "wb") as buffer:
-                buffer.write(content)
-                
-            # Clear memory explicitly
-            del content
+                while chunk := await file.read(1024 * 1024): # Read in 1MB chunks
+                    buffer.write(chunk)
             
             # Process and store in Vector DB in a background thread to prevent blocking
             chunks_count = await asyncio.to_thread(process_and_store_document, file_path)

@@ -30,14 +30,14 @@ def process_and_store_document(file_path: str):
         total_text_length = sum(len(doc.page_content.strip()) for doc in documents)
         if len(documents) == 0 or total_text_length < 50 * max(1, len(documents)):
             print(f"[{os.path.basename(file_path)}] Very little text found. Attempting OCR on scanned PDF...")
-            # To save memory on Render Free Tier, we'll process images one at a time and delete them
-            images = convert_from_path(file_path, poppler_path=POPPLER_PATH)
+            # To save memory on Render Free Tier, process images sequentially using generator
+            from pdf2image.generators import yield_images_from_path
+            
             documents = []
-            for i, image in enumerate(images):
+            for i, image in enumerate(yield_images_from_path(file_path, poppler_path=POPPLER_PATH)):
                 text = pytesseract.image_to_string(image)
                 documents.append(Document(page_content=text, metadata={"source": os.path.basename(file_path), "page": i}))
                 image.close() # Free image memory immediately
-            del images # Free image array memory
                 
     elif extension in ['.png', '.jpg', '.jpeg']:
         print(f"[{os.path.basename(file_path)}] Processing image via OCR...")
